@@ -177,6 +177,32 @@ def test_qa_onnx_inference(caplog=None):
         else:
             assert onnx[1] == regular[1]
 
+def test_passage_split_within_word(bert_base_squad2):
+    # text will be splitted in the middle of a word ("LongSpecialWordForTestCase"),
+    # which can cause trouble with Fast Tokenizer
+    qa_format_1 = [
+        {
+            "questions": ["Who counted the game among the best ever made?"],
+            "text": "Twilight Princess was released to universal critical acclaim and commercial success. "
+                    "It received perfect scores from major publications such as 1UP.com, Computer and Video Games,"
+                    " Electronic Gaming Monthly, Game Informer, GamesRadar, and GameSpy. On the review aggregators "
+                    "GameRankings and Metacritic, Twilight Princess has average scores of 95% and "
+                    "95 for the Wii version and scores of 95% and 96 for the GameCube version. "
+                    "GameTrailers in their review called it one of the greatest games ever created."
+                    "Twilight Princess was released to universal critical acclaim and commercial success. "
+                    "It received perfect scores from major publications LongSpecialWordForTestCase, Computer and Video Games,"
+                    " Electronic Gaming Monthly, Game Informer, GamesRadar, and GameSpy. On the review aggregators "
+                    "GameRankings and Metacritic, Twilight Princess has average scores of 95% and "
+                    "95 for the Wii version and scores of 95% and 96 for the GameCube version. "
+                    "GameTrailers in their review called it one of the greatest games ever created."
+                    "Twilight Princess was released to universal critical acclaim and commercial success. "
+                    "It received perfect scores from major publications such as 1UP.com, Computer and Video Games,"
+                    " Electronic Gaming Monthly, Game Informer, GamesRadar, and GameSpy. On the review aggregators "
+        }]
+
+    result1 = bert_base_squad2.inference_from_dicts(dicts=qa_format_1)
+    assert len(result1) == 1
+    assert len(result1[0]["predictions"][0]["answers"]) == 3
 
 if(__name__=="__main__"):
     test_training()
